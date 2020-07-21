@@ -1,7 +1,10 @@
+import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +20,17 @@ public class addQuestions {
         if (matcher.matches()) {
             try {
 
-                Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Q&A?&serverTimezone=UTC", "root", "root");
+                //connection to database, here with localhost for test purposes
+                File configFile = new File("config.properties");
+                FileReader reader = new FileReader(configFile);
+                Properties props = new Properties();
+                String host = props.getProperty("host", "localhost");
+                String user = props.getProperty("user","root");
+                String pw = props.getProperty("pass","root");
+                String port = props.getProperty("port","3303");
+                props.load(reader);
+                Connection myConn = DriverManager.getConnection("jdbc:mysql://"+ host +":"+port+"/Q&A?&serverTimezone=UTC", user, pw);
+//                Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Q&A?&serverTimezone=UTC", "root", "root");
                 Statement myStmt = myConn.createStatement();
                 String questionSafe = newQuestion.replace("'", "\\'");
                 myStmt.executeUpdate("INSERT INTO Questions (Question) VALUES (" + "'" + questionSafe + "'" + ")");

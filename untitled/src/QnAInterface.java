@@ -27,12 +27,14 @@ public class QnAInterface {
                 answerSaved = answer.checkAnswer();
                 System.out.println(answerSaved);
                 x = false;
+                scan.close();
             }
             //checks if answer contains special characters, if it does returns a message, asks the same question again. Else goes to next question.
              if (!answerSaved.equals("Answer contains special character(s). Please write your answer using alphanumeric characters")) {
                  currentQuestion = questionset.nextQuestion();
              }
         }
+
         //tells the user there are no more questions to answer
         System.out.println(currentQuestion);
 

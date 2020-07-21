@@ -1,5 +1,10 @@
+import javax.swing.plaf.nimbus.State;
+import java.io.File;
+import java.io.FileReader;
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,42 +31,70 @@ public class Answers {
 
         try {
             //connection to database, here with localhost for test purposes
-            Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Q&A?&serverTimezone=UTC", "root", "root");
+            File configFile = new File("config.properties");
+            FileReader reader = new FileReader(configFile);
+            Properties props = new Properties();
+            String host = props.getProperty("host", "localhost");
+            String user = props.getProperty("user","root");
+            String pw = props.getProperty("pass","root");
+            String port = props.getProperty("port","3303");
+            props.load(reader);
+            Connection myConn = DriverManager.getConnection("jdbc:mysql://"+ host +":"+port+"/Q&A?&serverTimezone=UTC", user, pw);
 
             //create statements
             Statement myStmt = myConn.createStatement();
             Statement myStmt2 = myConn.createStatement();
 
             //execute sql query to select the answer with matching text and Question ID
-            ResultSet answer = myStmt2.executeQuery("select * from Answers WHERE ID = "+ qID + " AND Answer = " + "'%" + input + "%'" );
+            String updateString1 =
+                    "select * from Answers WHERE ID = ? AND Answer = ?";
+            try {
+                PreparedStatement getQuestions = myConn.prepareStatement(updateString1);
+                getQuestions.setInt(1, qID);
+                getQuestions.setString(2, input);
+                ResultSet answer = getQuestions.executeQuery();
 
-            //if there is one, show how many thimes this answer was already answered and increment that value by one
-            if (answer.next()) {
-                int timesanswered = answer.getInt("TimesAnswered");
-                String answerID = answer.getString("AnswerID");
-                int tIncrement = timesanswered+1;
-                String updateString = "update Answers set TimesAnswered = " + tIncrement + " where AnswerID = " + answerID;
-                myStmt2.executeUpdate(updateString);
-                return "This answer already exists and was called " + timesanswered + "times. Sorry.";
+                if (answer.next()) {
+                    //if there is one, show how many thimes this answer was already answered and increment that value by one
+
+                    int timesanswered = answer.getInt("TimesAnswered");
+                    String answerID = answer.getString("AnswerID");
+                    int tIncrement = timesanswered+1;
+                    String updateString = "update Answers set TimesAnswered = " + tIncrement + " where AnswerID = " + answerID;
+                    myStmt2.executeUpdate(updateString);
+                    return "This answer already exists and was called " + timesanswered + "times. Sorry.";
+                }
+                //else its a unique answer, and is inserted into the database
+                else {
+                    Statement s = myConn.createStatement();
+                    ResultSet r = s.executeQuery("SELECT COUNT(*) AS rowcount FROM Answers");
+                    r.next();
+                    int count = r.getInt("rowcount") ;
+                    count++;
+                    r.close() ;
+                    myStmt.execute("SET FOREIGN_KEY_CHECKS = 0");
+                    String updateStatement = "INSERT INTO Answers VALUES (?,?,?,1)";
+                    PreparedStatement preparedStmt = myConn.prepareStatement(updateStatement);
+                    preparedStmt.setInt (1, qID);
+                    preparedStmt.setInt (2, count);
+                    preparedStmt.setString (3, input);
+                    preparedStmt.execute();
+                    //   myStmt.executeUpdate("INSERT INTO Answers VALUES (" + qID + ", " + count + ", " + "'" + input +"'" +  ", 1)");
+                    myStmt.execute("SET FOREIGN_KEY_CHECKS = 1");
+                    return "Congratulations, you were the first person to answer this way!";
+                }
+
+
+            } catch (Exception exc) {
+                exc.printStackTrace();
             }
-            //else its a unique answer, and is inserted into the database
-            else {
-                Statement s = myConn.createStatement();
-                ResultSet r = s.executeQuery("SELECT COUNT(*) AS rowcount FROM Answers");
-                r.next();
-                int count = r.getInt("rowcount") ;
-                count++;
-                r.close() ;
-                myStmt.execute("SET FOREIGN_KEY_CHECKS = 0");
-                myStmt.executeUpdate("INSERT INTO Answers VALUES (" + qID + ", " + count + ", " + "'" + input +"'" +  ", 1)");
-                myStmt.execute("SET FOREIGN_KEY_CHECKS = 1");
-                return "Congratulations, you were the first person to answer this way!";
+
             }
-
-
-        } catch (Exception exc) {
-            exc.printStackTrace();
+         catch (Exception e ) {
+            e.printStackTrace();
         }
+
+
         return "something went wrong";
     }
 
