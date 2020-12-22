@@ -25,9 +25,9 @@ public class Answers {
         String str = input;
         Matcher matcher = pattern.matcher(str);
 
-//        if (!matcher.matches()) {
-//            return  "Answer contains special character(s)";
-//        }
+        if (!matcher.matches()) {
+            return  "Answer contains special character(s)";
+        }
 
         try {
             //connection to database, here with localhost for test purposes

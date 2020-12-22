@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -22,10 +19,12 @@ public class addQuestions {
 
                 //connection to database, here with localhost for test purposes
                 Connection myConn = ConnectToDatabase.connectToDB();
-                Statement myStmt = myConn.createStatement();
-                String questionSafe = newQuestion.replace("'", "\\'");
-                myStmt.executeUpdate("INSERT INTO Questions (Question) VALUES (" + "'" + questionSafe + "'" + ")");
-                //if successful, prints out "updated".
+                String query = " insert into Questions (Question)"
+                        + " values (?)";
+                PreparedStatement myStmt = myConn.prepareStatement(query);
+                myStmt.setString(1, newQuestion);
+                myStmt.execute();
+
                 System.out.println("updated");
             } catch (Exception exc) {
                 exc.printStackTrace();
