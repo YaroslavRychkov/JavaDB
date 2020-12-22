@@ -21,16 +21,7 @@ public class addQuestions {
             try {
 
                 //connection to database, here with localhost for test purposes
-                File configFile = new File("config.properties");
-                FileReader reader = new FileReader(configFile);
-                Properties props = new Properties();
-                String host = props.getProperty("host", "localhost");
-                String user = props.getProperty("user","root");
-                String pw = props.getProperty("pass","root");
-                String port = props.getProperty("port","3303");
-                props.load(reader);
-                Connection myConn = DriverManager.getConnection("jdbc:mysql://"+ host +":"+port+"/Q&A?&serverTimezone=UTC", user, pw);
-//                Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Q&A?&serverTimezone=UTC", "root", "root");
+                Connection myConn = ConnectToDatabase.connectToDB();
                 Statement myStmt = myConn.createStatement();
                 String questionSafe = newQuestion.replace("'", "\\'");
                 myStmt.executeUpdate("INSERT INTO Questions (Question) VALUES (" + "'" + questionSafe + "'" + ")");

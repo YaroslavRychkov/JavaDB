@@ -9,6 +9,7 @@ public class QnAInterface {
         Questions questionset = new Questions();
         String currentQuestion = questionset.nextQuestion();
         //checks if there are any more questions available
+        Scanner scan = new Scanner(System.in);
         while (!currentQuestion.equals("No more Questions available")){
             //prints out the current question and asks for an answer
             System.out.println("Question Number ");
@@ -19,7 +20,6 @@ public class QnAInterface {
             String answerSaved = "";
             boolean x = true;
             while (x) {
-                Scanner scan = new Scanner(System.in);
                 String s;
                 s = scan.nextLine();
                 System.out.println("Answer: " + s);
@@ -27,14 +27,13 @@ public class QnAInterface {
                 answerSaved = answer.checkAnswer();
                 System.out.println(answerSaved);
                 x = false;
-                scan.close();
             }
             //checks if answer contains special characters, if it does returns a message, asks the same question again. Else goes to next question.
              if (!answerSaved.equals("Answer contains special character(s). Please write your answer using alphanumeric characters")) {
                  currentQuestion = questionset.nextQuestion();
              }
         }
-
+        scan.close();
         //tells the user there are no more questions to answer
         System.out.println(currentQuestion);
 

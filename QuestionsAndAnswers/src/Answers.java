@@ -25,22 +25,13 @@ public class Answers {
         String str = input;
         Matcher matcher = pattern.matcher(str);
 
-        if (!matcher.matches()) {
-            return  "Answer contains special character(s)";
-        }
+//        if (!matcher.matches()) {
+//            return  "Answer contains special character(s)";
+//        }
 
         try {
             //connection to database, here with localhost for test purposes
-            File configFile = new File("config.properties");
-            FileReader reader = new FileReader(configFile);
-            Properties props = new Properties();
-            String host = props.getProperty("host", "localhost");
-            String user = props.getProperty("user","root");
-            String pw = props.getProperty("pass","root");
-            String port = props.getProperty("port","3303");
-            props.load(reader);
-            Connection myConn = DriverManager.getConnection("jdbc:mysql://"+ host +":"+port+"/Q&A?&serverTimezone=UTC", user, pw);
-
+            Connection myConn = ConnectToDatabase.connectToDB();
             //create statements
             Statement myStmt = myConn.createStatement();
             Statement myStmt2 = myConn.createStatement();
